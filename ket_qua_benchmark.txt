@@ -1,0 +1,64 @@
+BENCHMARK CÁ NHÂN — DƯƠNG VĂN THÀNH
+=====================================
+Command: python bench.py
+Strategy: HeadingChunker(chunk_size=700)
+Backend: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 (local, cached)
+Corpus: 6 files
+Loaded: 58 chunks
+
+Scoring:
+- 2 điểm: chunk chứa answer marker ở top-1
+- 1 điểm: chunk chứa answer marker ở top-2 hoặc top-3
+- 0 điểm: top-3 không có chunk chứa answer marker
+
+Q1. Sau khi yêu cầu hủy được gửi, bên còn lại có bao lâu để phản hồi?
+Filter: audience=buyer
+1. 0.5152  ebay-buyer-returns-refunds#3
+2. 0.4990  ebay-buyer-cancel-order#2       GOLD-DOC, WRONG SECTION
+3. 0.4602  ebay-buyer-item-not-received#6
+Answer marker: "within 3 calendar days" nằm ở ebay-buyer-cancel-order#1, ngoài top-3
+Score: 0/2
+
+Q2. Người mua phải báo chưa nhận được hàng trong thời hạn bao lâu để đủ điều kiện bảo vệ?
+Filter: none
+1. 0.6614  ebay-buyer-item-not-received#2   ANSWER
+2. 0.6109  ebay-seller-protections#4
+3. 0.6046  ebay-seller-ask-ebay-step-in#6
+Answer marker: "within 30 calendar days after the delivery date"
+Score: 2/2
+
+Q3. Điều kiện nào để Top Rated Seller được hưởng bảo vệ của eBay?
+Filter: audience=seller
+1. 0.8365  ebay-seller-protections#1         ANSWER
+2. 0.7180  ebay-seller-protections#17        GOLD-DOC
+3. 0.7167  ebay-seller-protections#0         GOLD-DOC
+Answer marker: "The listing offered 30-day or longer returns"
+Score: 2/2
+
+Q4. Người mua thực hiện các bước nào để báo một món hàng chưa đến?
+Filter: audience=buyer
+1. 0.6682  ebay-buyer-item-not-received#2   GOLD-DOC, WRONG SECTION
+2. 0.6186  ebay-buyer-returns-refunds#3
+3. 0.6095  ebay-buyer-returns-refunds#0
+Answer marker: "I didn't receive it" nằm ở ebay-buyer-item-not-received#3, ngoài top-3
+Score: 0/2
+
+Q5. Người bán có thể chọn những thời hạn và hình thức trả hàng nào?
+Filter: audience=seller
+1. 0.6267  ebay-seller-return-policy#0       GOLD-DOC
+2. 0.6180  ebay-seller-return-policy#1       ANSWER
+3. 0.5635  ebay-seller-protections#14
+Answer marker: "30-day buyer-paid returns"
+Score: 1/2
+
+SUMMARY
+-------
+Document-level top-3 hit: 5/5
+Answer-bearing chunk in top-3: 3/5
+Content score: 5/10
+
+Failure case chính:
+Q1 và Q4 lấy đúng doc_id nhưng sai section. Cosine ưu tiên độ giống chủ đề; các chunk
+trong cùng file có chung heading nên chunk không chứa con số/quy trình vẫn xếp cao hơn
+chunk đáp án. Hướng sửa: thêm heading cấp section, overlap khi recursive-split, hoặc
+rerank bằng tín hiệu lexical cho số, đơn vị thời gian và action phrase.
